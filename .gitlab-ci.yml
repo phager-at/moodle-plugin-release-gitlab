@@ -24,7 +24,6 @@ variables:
   services:
     - mysql:5.7
   script:
-    - exit 0
     # Update packages and install git, mysql-client and npm.
     - apt update && apt install -y git default-mysql-client npm
     # Install old version of openjdk-8 in due of MDLSITE-5739.
@@ -62,6 +61,7 @@ variables:
     - moodle-plugin-ci phpunit
     - moodle-plugin-ci behat
 
+# Add more versions if you want/need.
 Moodle 3.11:
   <<: *job_definition
   variables:
@@ -98,7 +98,8 @@ release:
     - apt-get -y install zip curl jq
     - mkdir -p /tmp/release/$PLUGIN
     - cp -Rfv ./ /tmp/release/$PLUGIN/
-    - zip -r /tmp/newbuild.zip /tmp/release/ -x '*.git*'
+    - cd /tmp/release
+    - zip -r /tmp/newbuild.zip ./ -x '*.git*'
     - ITEMID=$(curl -s -F data=@/tmp/newbuild.zip "https://moodle.org/webservice/upload.php?token=$MOODLE_ORG_TOKEN" | jq --raw-output '.[0].itemid')
     - curl -s https://moodle.org/webservice/rest/server.php --data-urlencode "wstoken=${MOODLE_ORG_TOKEN}" --data-urlencode "wsfunction=local_plugins_add_version" --data-urlencode "moodlewsrestformat=json" --data-urlencode "frankenstyle=${PLUGIN}" --data-urlencode "zipdrafitemtid=${ITEMID}" | jq
 
